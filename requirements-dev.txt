@@ -12,7 +12,7 @@ iniconfig==2.3.0
 joblib==1.5.3
     # via scikit-learn
 kmedoids==0.5.5
-    # via clusterexp
+    # via benchcvi
 llvmlite==0.46.0
     # via numba
 numba==0.63.1
@@ -33,7 +33,7 @@ pandas==2.3.3
 pluggy==1.6.0
     # via pytest
 pycvi-lib @ git+https://github.com/nglm/pycvi.git@85d5647157eab80e79ebc80eda69a031e7ab8e72
-    # via clusterexp
+    # via benchcvi
 pygments==2.20.0
     # via pytest
 pytest==9.0.3
@@ -44,7 +44,7 @@ pytz==2026.2
 scikit-learn==1.7.2
     # via
     #   aeon
-    #   clusterexp
+    #   benchcvi
 scipy==1.17.1
     # via
     #   aeon
