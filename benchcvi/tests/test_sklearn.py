@@ -2,7 +2,7 @@ import pytest
 
 import numpy as np
 
-from clusterexp.sklearn import showcase
+from benchcvi.sklearn import showcase
 
 def test_showcase():
 

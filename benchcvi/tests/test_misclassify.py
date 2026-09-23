@@ -3,7 +3,7 @@ import pytest
 import numpy as np
 from sklearn.datasets import make_blobs
 
-from clusterexp.misclassify import (
+from benchcvi.misclassify import (
     full_random, balanced, bully, subclustering, superclustering,
     flag_misclassified, set_misclassified,
     stats,

@@ -4,7 +4,7 @@ import pytest
 
 from ..barton import load_data_from_github, URL_ROOT
 
-from clusterexp.data import (
+from benchcvi.data import (
     find_datasets, load_data_labels, filter_datasets, process_labels
 )
 

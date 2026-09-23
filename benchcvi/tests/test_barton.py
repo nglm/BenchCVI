@@ -2,7 +2,7 @@
 import numpy as np
 import pytest
 
-from clusterexp.barton import (
+from benchcvi.barton import (
     get_list_datasets_from_github, get_data_labels, arff_from_github,
     load_data_from_github, URL_ROOT
 )

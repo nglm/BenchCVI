@@ -1,5 +1,5 @@
 """
-Format UCR dataset to match requirements of ClusterExp
+Format UCR dataset to match requirements of BenchCVI
 
 - Take all `_train.tsv` datasets and save them into 2 files: one for the data and one for the labels.
   - The data is saved as a numpy array of shape (N, 1, T)
@@ -20,10 +20,10 @@ home_dir = Path.home()
 PATH_UCR_LOCAL = f"{home_dir}/Documents/Syncthing/Data/UCR/UCRArchive_2018/"
 
 
-from clusterexp.ucr import (
+from benchcvi.ucr import (
     save_data_labels_UCR, find_datasets_UCR
 )
-from clusterexp.data import write_list_datasets
+from benchcvi.data import write_list_datasets
 
 PATH_DATA = f"{home_dir}/Documents/Syncthing/Data/ClusterExp-restart2026/UCR/"
 

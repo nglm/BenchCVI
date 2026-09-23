@@ -3,10 +3,10 @@ from pathlib import Path
 home_dir = Path.home()
 
 
-from clusterexp.barton import (
+from benchcvi.barton import (
     save_data_labels_from_github, get_list_datasets_from_github
 )
-from clusterexp.data import write_list_datasets
+from benchcvi.data import write_list_datasets
 
 PATH_DATA = f"{home_dir}/Documents/Syncthing/Data/ClusterExp-restart2026/Barton/"
 

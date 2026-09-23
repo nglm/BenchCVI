@@ -5,11 +5,11 @@ import pytest
 
 from pycvi.cluster import get_clustering
 
-from clusterexp.config import interpret_config
-from clusterexp.clustering import (
+from benchcvi.config import interpret_config
+from benchcvi.clustering import (
     decompose_exp_fnames, f_quality, compute_VI_quality, group_exp_by_dataset, filter_experiments
 )
-from clusterexp.exp import create_clusterings
+from benchcvi.exp import create_clusterings
 
 def test_f_quality():
     # Test that f_quality returns the expected values for known VI values

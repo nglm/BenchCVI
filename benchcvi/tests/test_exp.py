@@ -2,9 +2,9 @@
 import numpy as np
 import pytest
 
-from clusterexp.utils import (write_json, extract_log_from_text)
+from benchcvi.utils import (write_json, extract_log_from_text)
 
-from clusterexp.exp import (
+from benchcvi.exp import (
     create_clusterings, prepare_data, compute_CVI_values
 )
 

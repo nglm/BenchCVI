@@ -1,9 +1,11 @@
-ClusterExp
+BenchCVI
 ===============================================================================
 
-Clustering experiments using internal cluster validity indices from [PyCVI](https://github.com/nglm/pycvi) package and using the measure of uncertainty on the number of clusters from the [PersiGraph](https://github.com/nglm/persigraph) method.
+Benchmarking of CVIs (Cluster Validity Indices) compatible with static and times series data and clustering methods. The package can also handle both clustering methods that mostly rely on the parameter k (number of clusters) and those that do not require it and evaluate CVIs for both types of clustering methods.
 
-The datasets used are:
+BenchCVI is notably compatible with:
 
-- The [clustering-benchmark](https://github.com/nglm/clustering-benchmark) repository forked from [here](https://github.com/deric/clustering-benchmark) for non time series data.
-- The [UCR archive](https://www.cs.ucr.edu/%7Eeamonn/time_series_data_2018/) for time series data.
+- [PyCVI](https://github.com/nglm/pycvi), where some CVIs are implemented in Python, compatible with static and time-series data, and making it possible to use sklearn clustering methods with time series metrics (for clustering methods that accept a custom metric, such as OPTICS, AgglomerativeClustering, HDBSCAN, etc.)
+- [sklearn](https://scikit-learn.org/stable/index.html), where clustering methods for static data are implemented
+- [kmedoids](https://python-kmedoids.readthedocs.io/en/latest/), a sklearn-like implementation of the KMedoids algorithm for static data
+- [aeon](https://www.aeon-toolkit.org/en/stable/) and [sktime](https://www.sktime.net/docs/users/), where clustering methods for time series data are implemented, as well as time-series distances and average functions.

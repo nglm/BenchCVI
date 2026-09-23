@@ -2,7 +2,7 @@
 import numpy as np
 import pytest
 
-from clusterexp.ucr import (
+from benchcvi.ucr import (
     find_datasets_UCR, save_data_labels_UCR, get_data_labels_UCR, ILL_FORMATED
 )
 

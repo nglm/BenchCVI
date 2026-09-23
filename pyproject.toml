@@ -1,14 +1,14 @@
 [project]
-name = "clusterexp"
+name = "benchcvi"
 version = "0.1.0"
-description = "Clustering Experiments"
+description = "Benchmarking of CVIs (Cluster Validity Indices) compatible with static and times series data and clustering methods."
 readme = "README.md"
 authors = [
     {name = "Natacha Galmiche", email = "natacha.galmiche@uib.no"}
 ]
 license = "MIT"
 license-files = ["LICENSE.txt"]
-keywords = ["clustering", "time-series", "internal cluster validity indices", "CVI", "machine learning"]
+keywords = ["clustering", "time-series", "internal cluster validity indices", "CVI", "machine learning", "benchmark", "benchmarking", "datasets", "evaluation", "metrics", "unsupervised learning", "data science"]
 
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -25,7 +25,6 @@ requires-python = ">=3.14"
 
 dependencies = [
     "kmedoids>=0.5.5",
-    # "pycvi-lib>=1.0.0",
     "pycvi-lib",
     "scikit-learn>=1.7.2",
 ]
@@ -45,7 +44,7 @@ requires = ["uv_build"]
 build-backend = "uv_build"
 
 [tool.uv.build-backend]
-module-name = "clusterexp"
+module-name = "benchcvi"
 module-root = ""
 
 [tool.uv.sources]
