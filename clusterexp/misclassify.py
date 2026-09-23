@@ -264,7 +264,7 @@ def balanced(
     apply_misclassification_to_all_clusters: bool = True,
 ) -> LabelArray:
     """
-    Misclassify each cluster evenly toward its nearest centroid.
+    Misclassify each cluster evenly toward its nearest neighbor centroid.
 
     The requested number of misclassified samples is distributed evenly
     across clusters. For each cluster, the samples closest to the
@@ -661,23 +661,27 @@ def superclustering(
 
     There are three supported superclustering modes:
 
-    1) Explicit mapping (``superclusters`` argument) - If
-       ``superclusters`` is provided (non-empty), it takes priority over
-         ``method``.
+    1) Explicit mapping (``superclusters`` argument)
+
+       - If ``superclusters`` is provided (non-empty), it takes priority
+         over ``method``.
        - Each list ``([clusters_to_merge])`` forces all listed clusters
          to receive the label with the greatest number of datapoints.
        - This is a manual, fully user-defined merging strategy.
 
-    2) Size-based merging (``method="smallest"``) - Repeatedly merges
-       the two current smallest clusters/superclusters. - After each
-       merge, the merged supercluster size is updated and used
-         for the next ordering step.
+    2) Size-based merging (``method="smallest"``)
+
+       - Repeatedly merges the two current smallest
+         clusters/superclusters. - After each merge, the merged
+         supercluster size is updated and used for the next ordering
+         step.
        - Distances are ignored on purpose; this yields intentionally
          naive superclustering examples.
 
-    3) Hierarchical centroid merging (``method="agglomerative"``) -
-       Computes one centroid per original cluster. - Runs
-       ``sklearn.cluster.AgglomerativeClustering`` on those centroids
+    3) Hierarchical centroid merging (``method="agglomerative"``)
+
+       - Computes one centroid per original cluster. - Runs
+         ``sklearn.cluster.AgglomerativeClustering`` on those centroids
          to obtain a merge tree.
        - Replays tree merges until the requested misclassification
          budget is reached (or just before crossing it when

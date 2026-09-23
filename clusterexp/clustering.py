@@ -1,4 +1,4 @@
-"""Helpers for clustering experiments."""
+"""Helpers for running and filtering and analysing clustering experiments."""
 
 import os
 
