@@ -61,8 +61,8 @@ def test_group_exp_by_dataset():
         "path_res" : "test/test_prepare_data/",
     },
     "config_clustering" : {
-        "k_range" : [1, 25],
         "KMeans" : {
+            "k_range" : [1, 25],
             "model" : "sklearn.cluster.KMeans",
             "model_kw" : {},
             "fit_predict_kw" : {},
@@ -70,6 +70,7 @@ def test_group_exp_by_dataset():
             "scaler_kw": {}
         },
         "Agglomerative-Single" : {
+            "k_range" : [1, 25],
             "model": "sklearn.cluster.AgglomerativeClustering",
             "model_kw": {
                 "linkage": "single",
@@ -79,6 +80,7 @@ def test_group_exp_by_dataset():
             "scaler_kw": {}
         },
         "KMedoids" : {
+            "k_range" : [1, 25],
             "model": "kmedoids.KMedoids",
             "model_kw": {
                 "metric": "euclidean",
@@ -116,8 +118,8 @@ def test_filter_experiments():
         "max_n_labels" : 25,
     },
     "config_clustering" : {
-        "k_range" : [1, 25],
         "KMeans" : {
+            "k_range" : [1, 25],
             "model" : "sklearn.cluster.KMeans",
             "model_kw" : {},
             "fit_predict_kw" : {},
@@ -125,6 +127,7 @@ def test_filter_experiments():
             "scaler_kw": {}
         },
         "Agglomerative-Single" : {
+            "k_range" : [1, 25],
             "model": "sklearn.cluster.AgglomerativeClustering",
             "model_kw": {
                 "linkage": "single",
@@ -134,6 +137,7 @@ def test_filter_experiments():
             "scaler_kw": {}
         },
         "KMedoids" : {
+            "k_range" : [1, 25],
             "model": "kmedoids.KMedoids",
             "model_kw": {
                 "metric": "euclidean",

@@ -11,8 +11,8 @@ from benchcvi.exp import (
 
 config_clustering_barton = {
     "config_clustering" : {
-        "k_range" : [1, 5],
         "KMeans" : {
+            "k_range" : [1, 5],
             "model" : "sklearn.cluster.KMeans",
             "model_kw" : {
                 "random_state" : 221
@@ -22,6 +22,7 @@ config_clustering_barton = {
             "scaler_kw": {}
         },
         "Agglomerative-Single" : {
+            "k_range" : [1, 5],
             "model": "sklearn.cluster.AgglomerativeClustering",
             "model_kw": {
                 "linkage": "single",
@@ -31,6 +32,7 @@ config_clustering_barton = {
             "scaler_kw": {}
         },
         "Agglomerative-Ward" : {
+            "k_range" : [1, 5],
             "model": "sklearn.cluster.AgglomerativeClustering",
             "model_kw": {
                 "linkage": "ward",
@@ -41,6 +43,7 @@ config_clustering_barton = {
             "scaler_kw": {}
         },
         "KMedoids" : {
+            "k_range" : [1, 5],
             "model": "kmedoids.KMedoids",
             "model_kw": {
                 "metric": "euclidean",
@@ -55,8 +58,8 @@ config_clustering_barton = {
 
 config_clustering_UCR = {
     "config_clustering" : {
-        "k_range" : [1, 4],
         "TimeSeriesKMeans" : {
+            "k_range" : [1, 4],
             "model": "aeon.clustering.TimeSeriesKMeans",
             "model_kw" : {
                 "random_state" : 221
@@ -66,6 +69,7 @@ config_clustering_UCR = {
             "scaler_kw": {}
         },
         "TimeSeriesKMedoids" : {
+            "k_range" : [1, 4],
             "model": "aeon.clustering.TimeSeriesKMedoids",
             "model_kw" : {
                 "random_state" : 221
@@ -75,6 +79,7 @@ config_clustering_UCR = {
             "scaler_kw": {}
         },
         "Agglomerative-Single" : {
+            "k_range" : [1, 4],
             "model": "sklearn.cluster.AgglomerativeClustering",
             "model_kw": {
                 "linkage": "single",

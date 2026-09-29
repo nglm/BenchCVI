@@ -22,8 +22,8 @@ config_1 = {
     "quality_ref_min": 0.6,
     "quality_best_min": 0.6,
     "seed": 221,
-    "k_range": [1, 25],
     "KMeans": {
+        "k_range": [1, 25],
         "model_class": sklearn.cluster.KMeans,
         "model_kw": {"random_state" : numpy.random.RandomState(211)},
         "fit_predict_kw": {},
@@ -60,11 +60,11 @@ config_cvi = {
 
 config_clustering = {
   "config_clustering": {
-    "k_range": [
-      1,
-      25
-    ],
     "KASBA": {
+      "k_range": [
+        1,
+        4
+      ],
       "model": "aeon.clustering.KASBA",
       "model_kw": {},
       "fit_predict_kw": {},
@@ -72,6 +72,10 @@ config_clustering = {
       "scaler_kw": {}
     },
     "TimeSeriesKMedoids": {
+      "k_range": [
+        1,
+        4
+      ],
       "model": "aeon.clustering.TimeSeriesKMedoids",
       "model_kw": {},
       "fit_predict_kw": {},
@@ -79,6 +83,10 @@ config_clustering = {
       "scaler_kw": {}
     },
     "Agglomerative-Single": {
+      "k_range": [
+        1,
+        4
+      ],
       "model": "sklearn.cluster.AgglomerativeClustering",
       "model_kw": {
         "linkage": "single",
@@ -170,28 +178,40 @@ def test_get_exp_config():
     expected_experiments_clustering = {
         "config_clustering": {
             "KASBA": {
-            "model": "aeon.clustering.KASBA",
-            "model_kw": {},
-            "fit_predict_kw": {},
-            "scaler": "sklearn.preprocessing.StandardScaler",
-            "scaler_kw": {}
+              "k_range": [
+                1,
+                4
+              ],
+              "model": "aeon.clustering.KASBA",
+              "model_kw": {},
+              "fit_predict_kw": {},
+              "scaler": "sklearn.preprocessing.StandardScaler",
+              "scaler_kw": {}
             },
             "TimeSeriesKMedoids": {
-            "model": "aeon.clustering.TimeSeriesKMedoids",
-            "model_kw": {},
-            "fit_predict_kw": {},
-            "scaler": "sklearn.preprocessing.StandardScaler",
-            "scaler_kw": {}
+              "k_range": [
+                1,
+                4
+              ],
+              "model": "aeon.clustering.TimeSeriesKMedoids",
+              "model_kw": {},
+              "fit_predict_kw": {},
+              "scaler": "sklearn.preprocessing.StandardScaler",
+              "scaler_kw": {}
             },
             "Agglomerative-Single": {
-            "model": "sklearn.cluster.AgglomerativeClustering",
-            "model_kw": {
-                "linkage": "single",
-                "metric": "pycvi.dist.time_series_metric_with_sklearn"
-            },
-            "fit_predict_kw": {},
-            "scaler": "sklearn.preprocessing.StandardScaler",
-            "scaler_kw": {}
+              "k_range": [
+                1,
+                4
+              ],
+              "model": "sklearn.cluster.AgglomerativeClustering",
+              "model_kw": {
+                  "linkage": "single",
+                  "metric": "pycvi.dist.time_series_metric_with_sklearn"
+              },
+              "fit_predict_kw": {},
+              "scaler": "sklearn.preprocessing.StandardScaler",
+              "scaler_kw": {}
             }
         }
     }

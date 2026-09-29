@@ -22,8 +22,8 @@ CONFIG_DATA_BASE = {
 
 CONFIG_CLUSTERING_BASE = {
     "config_clustering" : {
-        "k_range" : [1, 25],
         "KMeans" : {
+            "k_range" : [1, 25],
             "model" : "sklearn.cluster.KMeans",
             "model_kw" : {
                 "random_state" : 221
@@ -33,6 +33,7 @@ CONFIG_CLUSTERING_BASE = {
             "scaler_kw": {}
         },
         "Agglomerative-Ward" : {
+            "k_range" : [1, 25],
             "model": "sklearn.cluster.AgglomerativeClustering",
             "model_kw": {
                 "linkage": "ward",
@@ -43,6 +44,7 @@ CONFIG_CLUSTERING_BASE = {
             "scaler_kw": {}
         },
         "Agglomerative-Single" : {
+            "k_range" : [1, 25],
             "model": "sklearn.cluster.AgglomerativeClustering",
             "model_kw": {
                 "linkage": "single",
@@ -53,6 +55,7 @@ CONFIG_CLUSTERING_BASE = {
             "scaler_kw": {}
         },
         "SpectralClustering" : {
+            "k_range" : [1, 25],
             "model": "sklearn.cluster.SpectralClustering",
             "model_kw" : {
                 "random_state" : 221
@@ -62,6 +65,7 @@ CONFIG_CLUSTERING_BASE = {
             "scaler_kw": {}
         },
         "KMedoids" : {
+            "k_range" : [1, 25],
             "model": "kmedoids.KMedoids",
             "model_kw": {
                 "metric": "euclidean",
@@ -76,8 +80,8 @@ CONFIG_CLUSTERING_BASE = {
 
 CONFIG_CLUSTERING_TIME_SERIES_BASE = {
     "config_clustering" : {
-        "k_range" : [1, 25],
         "KASBA" : {
+            "k_range" : [1, 25],
             "model" : "aeon.clustering.KASBA",
             "model_kw" : {
                 "random_state" : 221
@@ -87,6 +91,7 @@ CONFIG_CLUSTERING_TIME_SERIES_BASE = {
             "scaler_kw": {}
         },
         "KShape" : {
+            "k_range" : [1, 25],
             "model": "aeon.clustering.KShape",
             "model_kw" : {
                 "random_state" : 221
@@ -96,6 +101,7 @@ CONFIG_CLUSTERING_TIME_SERIES_BASE = {
             "scaler_kw": {}
         },
         "TimeSeriesKMeans" : {
+            "k_range" : [1, 25],
             "model": "aeon.clustering.TimeSeriesKMeans",
             "model_kw" : {
                 "random_state" : 221
@@ -105,6 +111,7 @@ CONFIG_CLUSTERING_TIME_SERIES_BASE = {
             "scaler_kw": {}
         },
         "TimeSeriesKMedoids" : {
+            "k_range" : [1, 25],
             "model": "aeon.clustering.TimeSeriesKMedoids",
             "model_kw" : {
                 "random_state" : 221
@@ -114,6 +121,7 @@ CONFIG_CLUSTERING_TIME_SERIES_BASE = {
             "scaler_kw": {}
         },
         "TimeSeriesKernelKMeans" : {
+            "k_range" : [1, 25],
             "model": "aeon.clustering.TimeSeriesKernelKMeans",
             "model_kw" : {
                 "random_state" : 221
@@ -123,6 +131,7 @@ CONFIG_CLUSTERING_TIME_SERIES_BASE = {
             "scaler_kw": {}
         },
         "TimeSeriesCLARA" : {
+            "k_range" : [1, 25],
             "model": "aeon.clustering.TimeSeriesCLARA",
             "model_kw" : {
                 "random_state" : 221
@@ -132,6 +141,7 @@ CONFIG_CLUSTERING_TIME_SERIES_BASE = {
             "scaler_kw": {}
         },
         "TimeSeriesCLARANS" : {
+            "k_range" : [1, 25],
             "model": "aeon.clustering.TimeSeriesCLARANS",
             "model_kw" : {
                 "random_state" : 221
@@ -141,6 +151,7 @@ CONFIG_CLUSTERING_TIME_SERIES_BASE = {
             "scaler_kw": {}
         },
         "ElasticSOM" : {
+            "k_range" : [1, 25],
             "model": "aeon.clustering.ElasticSOM",
             "model_kw" : {
                 "random_state" : 221
@@ -150,6 +161,7 @@ CONFIG_CLUSTERING_TIME_SERIES_BASE = {
             "scaler_kw": {}
         },
         "KSpectralCentroid" : {
+            "k_range" : [1, 25],
             "model": "aeon.clustering.KSpectralCentroid",
             "model_kw" : {
                 "random_state" : 221
@@ -159,6 +171,7 @@ CONFIG_CLUSTERING_TIME_SERIES_BASE = {
             "scaler_kw": {}
         },
         "Agglomerative-Single" : {
+            "k_range" : [1, 25],
             "model": "sklearn.cluster.AgglomerativeClustering",
             "model_kw": {
                 "linkage": "single",
@@ -249,7 +262,6 @@ CONFIG_DEFAULT_VALUES = {
         "include_only" : [],
     },
     "config_clustering" : {
-        "k_range" : None,
         "lower" : {
             "model_kw" : {},
             "fit_predict_kw" : {},
@@ -293,9 +305,7 @@ def get_mandatory_keys() -> dict:
             "lower" : None,
         },
         "config_clustering" : {
-            "mandatory" : {
-                "k_range": (list, tuple, np.ndarray),
-            },
+            "mandatory" : { },
             "lower" : {
                 # Interpreted: object, but saved: str
                 "model" : object,
@@ -381,7 +391,7 @@ def add_default(config:dict) -> dict:
     ``max_n_labels``, ``max_n_dims``, ``path_data``, ``path_res`` if not
     present (so none are mandatory, but they are all recommended)
 
-    For the general clustering config: Add  ``seed``if not present (but not ``k_range``, which is in any case mandatory).
+    For the general clustering config: Add  ``seed``if not present.
 
     For each clustering experiment: Add ``model_kw``, ``fit_predict_kw``,
     ``scaler``, ``scaler_kw`` if not present (but not ``model``,

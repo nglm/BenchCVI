@@ -290,7 +290,6 @@ def create_clusterings(
 
     # Get the clustering experiments configuration from the config file
     exps_config = get_exp_config(config)
-    k_range = range(*config["config_clustering"]["k_range"])
 
     # ------------------ Load datasets ------------------------
     path_datasets = log_data['log_data']['kept_datasets']
@@ -378,7 +377,7 @@ def create_clusterings(
                 clusterings = generate_all_clusterings(
                     data=data,
                     model_class=exp_config['model'],
-                    n_clusters_range=k_range,
+                    n_clusters_range=range(*exp_config['k_range']),
                     ts_dist=ts_dist,
                     scaler=scaler,
                     model_kw=model_kw,
