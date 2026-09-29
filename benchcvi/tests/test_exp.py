@@ -1,12 +1,13 @@
 
 import numpy as np
 import pytest
+from unittest.mock import patch
 
 from benchcvi.utils import (write_json)
 from benchcvi.log import extract_log_from_text
 
 from benchcvi.exp import (
-    create_clusterings, prepare_data, compute_CVI_values
+    create_clusterings, prepare_data, compute_CVI_values, re_use_experiment
 )
 
 config_clustering_barton = {
@@ -134,6 +135,72 @@ config1_UCR = {
     **config_data_CVI,
     **config_clustering_UCR,
 }
+
+
+def test_re_use_experiment():
+    # An input without a CVI or clustering log should be rejected.
+    with pytest.raises(ValueError, match="must be a CVI log or a clustering log"):
+        re_use_experiment({})
+
+    # A missing experiment file means there is nothing to reuse.
+    log_exp = {"log_clustering": {"log_fname": "missing.json"}}
+    with patch("benchcvi.exp.os.path.isfile", return_value=False):
+        assert re_use_experiment(log_exp) is False
+
+    # A consistent clustering log can be reused.
+    log_exp = {"log_clustering": {"log_fname": "existing.json"}}
+    with (
+        patch("benchcvi.exp.os.path.isfile", return_value=True),
+        patch("benchcvi.exp.interpret_dict", return_value={}),
+        patch("benchcvi.exp.consistent_log_exp", return_value=True),
+    ):
+        assert re_use_experiment(log_exp) is True
+
+    # A consistent CVI log can also be reused.
+    log_exp = {"log_CVI": {"log_fname": "existing.json"}}
+    with (
+        patch("benchcvi.exp.os.path.isfile", return_value=True),
+        patch("benchcvi.exp.interpret_dict", return_value={}),
+        patch("benchcvi.exp.consistent_log_exp", return_value=True),
+    ):
+        assert re_use_experiment(log_exp) is True
+
+    # re_run forces a consistent log to be recomputed instead of reused.
+    log_exp = {"log_clustering": {"log_fname": "existing.json"}}
+    with (
+        patch("benchcvi.exp.os.path.isfile", return_value=True),
+        patch("benchcvi.exp.interpret_dict", return_value={}),
+        patch("benchcvi.exp.consistent_log_exp", return_value=True),
+    ):
+        assert re_use_experiment(log_exp, re_run=True) is False
+
+    # An inconsistent existing log raises unless overwrite or re_run is set.
+    log_exp = {"log_clustering": {"log_fname": "existing.json"}}
+    with (
+        patch("benchcvi.exp.os.path.isfile", return_value=True),
+        patch("benchcvi.exp.interpret_dict", return_value={}),
+        patch("benchcvi.exp.consistent_log_exp", return_value=False),
+    ):
+        with pytest.raises(FileExistsError):
+            re_use_experiment(log_exp)
+
+    # overwrite allows replacement of an inconsistent log without reusing it.
+    log_exp = {"log_clustering": {"log_fname": "existing.json"}}
+    with (
+        patch("benchcvi.exp.os.path.isfile", return_value=True),
+        patch("benchcvi.exp.interpret_dict", return_value={}),
+        patch("benchcvi.exp.consistent_log_exp", return_value=False),
+    ):
+        assert re_use_experiment(log_exp, overwrite=True) is False
+
+    # re_run also allows replacement of an inconsistent log.
+    log_exp = {"log_clustering": {"log_fname": "existing.json"}}
+    with (
+        patch("benchcvi.exp.os.path.isfile", return_value=True),
+        patch("benchcvi.exp.interpret_dict", return_value={}),
+        patch("benchcvi.exp.consistent_log_exp", return_value=False),
+    ):
+        assert re_use_experiment(log_exp, re_run=True) is False
 
 
 def test_prepare_data():
