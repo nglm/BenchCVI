@@ -6,8 +6,9 @@ from ..barton import load_data_from_github, URL_ROOT
 
 from benchcvi.data import (
     find_datasets, load_data_labels, filter_datasets, process_labels,
-    summary_stats,
+    summary_stats, all_summary_stats
 )
+from benchcvi.utils import write_json, load_json
 
 path_data = "./example_data/"
 
@@ -144,3 +145,28 @@ def test_summary_stats():
     assert stats["n_labels"] == 2
     assert np.array_equal(stats["datapoints_per_label"], [1, 2])
     assert np.array_equal(stats["sum_idx_per_label"], [1, 2])
+
+def test_all_summary_stats():
+    datasets = find_datasets(path_data)
+
+    path_test = f"test/test_all_summary_stats"
+
+    # Generate summary stats of each dataset and save them as a json
+    all_stats1 = all_summary_stats(path_data, datasets)
+    write_json(f"{path_test}/summary_stats1.json", all_stats1)
+    assert isinstance(all_stats1, dict)
+    assert set(all_stats1.keys()) == set(datasets)
+
+    # Do it again to check it's still the same
+    all_stats2 = all_summary_stats(path_data, datasets)
+    write_json(f"{path_test}/summary_stats2.json", all_stats2)
+    assert isinstance(all_stats2, dict)
+    assert set(all_stats2.keys()) == set(datasets)
+
+    assert all_stats1 == all_stats2
+
+    # Compare with pre-existing computations
+    all_stats = load_json(f"{path_data}/summary_stats.json")
+    assert all_stats == all_stats1
+
+

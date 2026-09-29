@@ -63,9 +63,9 @@ def find_datasets(
     - recursively go through the given folder
     - finds files that ends with `_data.csv` and `_labels.csv` or `_data.tsv` and `_labels.tsv` or `_data.npy` and `_labels.npy`
     - make sure that you do have both data and label files
-    - returns a list of dataset names as ``[full/path/to/DATASET]``
+    - returns a list of dataset names as ``[path/to/DATASET]``
       with the `_data.ext` but not the `_labels.ext` which is then easy to infer anyway. Originally I wanted to
-      have a dictionnary with a shortname for the dataset (excluding the
+      have a dictionary with a shortname for the dataset (excluding the
       root of the path to the dataset but there could be issues if a
       given dataset has the same filename in several subfolders)
 

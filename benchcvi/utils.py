@@ -203,13 +203,6 @@ def interpret_dict(config:Union[dict, str]) -> dict:
 
     return interpreted_dict
 
-def equal_dict(d1: dict, d2:dict) -> bool:
-    """
-    Check whether 2 dicts are equal, allowing for lists in values
-    """
-    are_equal = True
-
-
 def load_json(fname: str) -> Dict:
     """
     Load a JSON file and cast numeric string keys to integers.
