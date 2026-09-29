@@ -11,7 +11,7 @@ from pycvi.cvi import Hartigan
 from ..config import (
     CONFIG_DATA_BASE, CONFIG_CLUSTERING_BASE,
     CONFIG_CLUSTERING_TIME_SERIES_BASE,
-    CONFIG_CVI_BASE, CONFIG_DEFAULT_VALUES, get_models_config,
+    CONFIG_CVI_BASE, CONFIG_DEFAULT_VALUES, get_exp_config,
     make_default_config, add_default, check_config,
     interpret_config, interpret_config,
     get_mandatory_keys,
@@ -19,7 +19,7 @@ from ..config import (
 from ..utils import write_json, load_json
 
 config_1 = {
-    "quality_true_min": 0.6,
+    "quality_ref_min": 0.6,
     "quality_best_min": 0.6,
     "seed": 221,
     "k_range": [1, 25],
@@ -38,7 +38,7 @@ config_1 = {
 config_cvi = {
   "config_CVI": {
     "seed": 221,
-    "quality_true_min": 0.6,
+    "quality_ref_min": 0.6,
     "quality_best_min": 0.6,
     "Hartigan": {
       "cvi": "pycvi.cvi.Hartigan"
@@ -164,10 +164,10 @@ def test_interpret_config():
     assert config_clustering_interpreted["config_clustering"]["KMeans"]["model"] == sklearn.cluster.KMeans
     assert config_clustering_interpreted["config_clustering"]["KMeans"]["model"] == KMeans
 
-def test_get_models_config():
-    models_clustering = get_models_config(config_clustering)
+def test_get_exp_config():
+    experiments_clustering = get_exp_config(config_clustering)
 
-    expected_models_clustering = {
+    expected_experiments_clustering = {
         "config_clustering": {
             "KASBA": {
             "model": "aeon.clustering.KASBA",
@@ -196,9 +196,9 @@ def test_get_models_config():
         }
     }
 
-    assert models_clustering == expected_models_clustering
+    assert experiments_clustering == expected_experiments_clustering
 
-    expected_models_cvi = {
+    expected_experiments_cvi = {
         "config_CVI": {
             "Hartigan": {
             "cvi": "pycvi.cvi.Hartigan"
@@ -218,5 +218,5 @@ def test_get_models_config():
         }
     }
 
-    assert get_models_config(config_cvi) == expected_models_cvi
+    assert get_exp_config(config_cvi) == expected_experiments_cvi
 

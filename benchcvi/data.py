@@ -13,109 +13,6 @@ from pathlib import Path
 
 from typing import List, Dict, Tuple, Union, Any
 
-# def print_heads(
-#     fnames: List[str],
-#     path:str = "./",
-#     n_labels_max:int = 20,
-#     n_samples_max:int = 10000,
-#     UCR: bool = False,
-# ) -> None:
-#     """
-#     Print summary information and heads for multiple datasets.
-
-#     Parameters
-#     ----------
-#     fnames : List[str]
-#         Dataset names or filenames.
-#     path : str, optional
-#         Prefix used to resolve each dataset location, by default "./".
-#     n_labels_max : int, optional
-#         Threshold used to flag datasets with too many labels,
-#         by default 20.
-#     n_samples_max : int, optional
-#         Threshold used to flag datasets with too many samples,
-#         by default 10000.
-#     UCR : bool, optional
-#         If True, load UCR-formatted files from local TSV paths;
-#         otherwise load ARFF datasets, by default False.
-
-#     Returns
-#     -------
-#     Dict[str, Dict]
-#         Per-dataset summary containing metadata such as shape,
-#         labeling information, and potential loading errors.
-#     """
-#     print(f"MAX LABELS: {n_labels_max}\nMAX SAMPLES: {n_samples_max}\n")
-#     summary = {}
-#     for f in fnames:
-#         summary[f] = {}
-
-#         # Get the dataframe corresponding to the filename
-#         # We don't use get_data_labels functions here because we want to
-#         # use the raw df.
-#         if UCR:
-#             fname = get_fname(f, only_root=False, data_source='UCR')
-#             print(fname)
-#             full_f = path+fname
-#             try:
-#                 df = pd.read_csv(full_f, sep="\t")
-#             except Exception as ex:
-#                 meta = ex
-#                 df = None
-#         else:
-#             full_f = path + f
-#             print(full_f)
-#             data, meta = arff_from_github(full_f)
-#             if data is None:
-#                 df = None
-#             else:
-#                 df = pd.DataFrame(data)
-#         # Print the head of the data frame, to get a better idea of the
-#         # dataset
-
-#         if df is not None:
-#             cols = df.columns.str.lower()
-
-#             labeled = (("class" in cols) or UCR)
-#             has_na = df.isnull().sum().sum() > 0
-#             shape = (len(df), len(cols))
-
-
-#             # We use get_data_labels here just to count the labels,
-#             # not to get df as it would already be processed
-#             if UCR:
-#                 _, _, n_labels, _ = get_data_labels_UCR(full_f, path="")
-#             else:
-#                 if "class" in cols:
-#                     _, _, n_labels, _ = get_data_labels(full_f, path="")
-#                 else:
-#                     n_labels = None
-
-#             if labeled:
-#                 too_many_labels = n_labels > n_labels_max
-#             else:
-#                 too_many_labels = False
-
-#             msg = (
-#                 f"Shape: {shape}   |   n_labels: {n_labels}\n" +
-#                 f"Labeled:         {labeled}\n" +
-#                 f"Has NA values:   {has_na}\n" +
-#                 f"Too many labels: {too_many_labels}\n" +
-#                 f"Too many samples:{shape[0]>n_samples_max}"
-#             )
-#             print(msg)
-#             print(df.head())
-
-#             summary[f]["labeled"] = labeled
-#             summary[f]["has_na"] = has_na
-#             summary[f]["shape"] = shape
-#         # If there was a problem loading the data, then the error message
-#         # is returned in "meta"
-#         else:
-#             summary[f]["error"] = meta
-#             print(meta)
-#     return summary
-
 DataArray = NDArray[np.float64]
 LabelArray = NDArray[np.int_]
 
@@ -473,3 +370,69 @@ def process_labels(labels: np.ndarray) -> Tuple[np.ndarray, int]:
             [map_classes[label] for label in labels],
             dtype=int)
     return new_labels, n_labels
+
+def summary_stats(data: np.ndarray, labels: np.ndarray) -> dict:
+    """
+    Compute summary stats of a dataset for sanity check purposes
+
+    Parameters
+    ----------
+    data : np.ndarray
+        The input data array.
+    labels : np.ndarray
+        The corresponding labels array.
+
+    Returns
+    -------
+    dict
+        A dictionary containing summary statistics of the dataset:
+        - "shape": Shape of the data array.
+        - "mean": Mean of the data along the first axis.
+        - "std": Standard deviation of the data along the first axis.
+        - "min": Minimum values of the data along the first axis.
+        - "max": Maximum values of the data along the first axis.
+        - "n_labels": Number of unique labels.
+        - "datapoints_per_label": Count of datapoints for each unique label.
+        - "sum_idx_per_label": Sum of indices for each unique label.
+    """
+    unique_labels, label_counts = np.unique(labels, return_counts=True)
+    label_indices = np.arange(len(labels))
+    index_sums = np.array([
+        label_indices[labels == label].sum()
+        for label in unique_labels
+    ])
+
+    stats = {
+        "shape": list(np.shape(data)),
+        "mean": np.mean(data, axis=0).tolist(),
+        "std": np.std(data, axis=0).tolist(),
+        "min": np.amin(data, axis=0).tolist(),
+        "max": np.amax(data, axis=0).tolist(),
+        "n_labels": len(unique_labels),
+        "datapoints_per_label": label_counts.tolist(),
+        "sum_idx_per_label": index_sums.tolist(),
+    }
+    return stats
+
+def all_summary_stats(path_data: str, datasets: List[str]) -> Dict[str, dict]:
+    """
+    Compute summary stats for multiple datasets.
+
+    Parameters
+    ----------
+    path_data : str
+        Path to the folder containing datasets.
+    datasets : List[str]
+        List of dataset names to compute summary stats for.
+
+    Returns
+    -------
+    Dict[str, dict]
+        Dictionary mapping dataset names to their summary stats.
+    """
+    all_stats = {}
+    for dataset in datasets:
+        data, labels = load_data_labels(f"{path_data}{dataset}")
+        all_stats[dataset] = summary_stats(data, labels)
+    return all_stats
+

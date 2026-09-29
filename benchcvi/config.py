@@ -174,10 +174,10 @@ CONFIG_CLUSTERING_TIME_SERIES_BASE = {
 CONFIG_CVI_BASE = {
     "config_CVI" : {
         "seed" : 221,
-        "quality_true_min" : 0.,
+        "quality_ref_min" : 0.,
         "quality_best_min" : 0.,
-        "best_q_true_only" : False,
-        "best_q_max_only" : False,
+        "best_q_ref_only" : False,
+        "best_q_best_only" : False,
         "Hartigan" : {
             "cvi" : "pycvi.cvi.Hartigan",
             "cvi_kw" : {
@@ -259,7 +259,7 @@ CONFIG_DEFAULT_VALUES = {
     },
     "config_CVI" : {
         "seed" : 221,
-        "quality_true_min" : 0.0,
+        "quality_ref_min" : 0.0,
         "quality_best_min" : 0.0,
         "lower" : {
             "cvi_init_kw" : {},
@@ -309,10 +309,10 @@ def get_mandatory_keys() -> dict:
         "config_CVI" : {
             "mandatory" : {
                 "seed": int,
-                "quality_true_min": (int, float),
+                "quality_ref_min": (int, float),
                 "quality_best_min": (int, float),
-                "best_q_true_only": bool,
-                "best_q_max_only": bool,
+                "best_q_ref_only": bool,
+                "best_q_best_only": bool,
             },
             "lower" : {
                 "cvi": object,
@@ -383,13 +383,13 @@ def add_default(config:dict) -> dict:
 
     For the general clustering config: Add  ``seed``if not present (but not ``k_range``, which is in any case mandatory).
 
-    For each clustering model: Add ``model_kw``, ``fit_predict_kw``,
+    For each clustering experiment: Add ``model_kw``, ``fit_predict_kw``,
     ``scaler``, ``scaler_kw`` if not present (but not ``model``,
     which is in any case mandatory).
 
-    For the general CVI config: Add ``quality_true_min``, ``quality_best_min``, ``seed``, ``best_q_true_only``, ``best_q_max_only`` if not present.
+    For the general CVI config: Add ``quality_ref_min``, ``quality_best_min``, ``seed``, ``best_q_ref_only``, ``best_q_best_only`` if not present.
 
-    For each CVI model: Add ``cvi_kw`` and ``cvi_init_kw`` if not
+    For each CVI experiment: Add ``cvi_kw`` and ``cvi_init_kw`` if not
     present (but not ``cvi``, which is in any case mandatory).
 
     Parameters
@@ -403,8 +403,8 @@ def add_default(config:dict) -> dict:
         Configuration dictionary completed with missing default values.
     """
 
-    # Get the subset of the config about the models (cvi, clustering)
-    models_config = get_models_config(config)
+    # Get the subset of the config about the experiments (cvi, clustering)
+    exps_config = get_exp_config(config)
 
     complete_dict = {}
 
@@ -419,10 +419,10 @@ def add_default(config:dict) -> dict:
             # Complete lower level config with default values, if not present
             # 1. Remove the "lower" key from the complete_dict
             has_lower = complete_dict[config_type].pop("lower", False)
-            # 2. Add the lower level default values to each model's config
+            # 2. Add the lower level default values to each exp's config
             if has_lower:
-                for model, model_config in models_config[config_type].items():
-                    complete_dict[config_type][model] = default_values["lower"] | model_config
+                for exp, exp_config in exps_config[config_type].items():
+                    complete_dict[config_type][exp] = default_values["lower"] | exp_config
 
     return complete_dict
 
@@ -462,9 +462,9 @@ def interpret_config(config:Union[dict, str]) -> dict:
         interpreted_dict = add_default(interpreted_dict)
     return interpreted_dict
 
-def get_models_config(config:dict) -> dict:
+def get_exp_config(config:dict) -> dict:
     """
-    Extract per-model configuration blocks from a config.
+    Extract per-experiment configuration blocks from a config.
 
     Parameters
     ----------
@@ -474,12 +474,12 @@ def get_models_config(config:dict) -> dict:
     Returns
     -------
     dict
-        Nested dictionary containing only the model
+        Nested dictionary containing only the experiment
         entries for each supported config section.
     """
     all_keys = get_mandatory_keys()
 
-    model_config = {}
+    exp_config = {}
 
     for config_type, config_keys in all_keys.items():
 
@@ -487,14 +487,14 @@ def get_models_config(config:dict) -> dict:
             # Skip this config type if it is not present in the given config
             continue
 
-        # Get keys that are not mandatory (and thus model keys)
-        # And extract the config of each model (clustering or cvi)
-        model_config[config_type] = {
+        # Get keys that are not mandatory (and thus experiment keys)
+        # And extract the config of each experiment (clustering or cvi)
+        exp_config[config_type] = {
             k : config[config_type][k] for k in config[config_type]
             if k not in all_keys[config_type]["mandatory"]
         }
 
-    return model_config
+    return exp_config
 
 
 def check_config( config:dict, ) -> bool:
@@ -517,8 +517,8 @@ def check_config( config:dict, ) -> bool:
 
     all_keys = get_mandatory_keys()
 
-    # Subset of the config that is only about the models (cvi, clustering)
-    model_config = get_models_config(config)
+    # Subset of the config that is only about the experiments (cvi, clustering)
+    exp_config = get_exp_config(config)
 
 
     for config_type, config_keys in all_keys.items():
@@ -542,20 +542,20 @@ def check_config( config:dict, ) -> bool:
             if all_keys[config_type]["lower"] is None:
                 continue
 
-            # Check that there is at least one model
-            if not model_config[config_type]:
-                raise ValueError(f"No individual models configured in {config_type}.")
+            # Check that there is at least one experiment
+            if not exp_config[config_type]:
+                raise ValueError(f"No individual experiments configured in {config_type}.")
 
-            # Check each models (clustering or cvi) one by one
+            # Check each experiment (clustering or cvi) one by one
             mandatory_keys = all_keys[config_type]["lower"]
 
-            for model, config_model in model_config[config_type].items():
+            for exp, config_exp in exp_config[config_type].items():
 
-                msg = f"Model configuration missing mandatory key in {config_type}. Got {list(config_model.keys())}, expected {mandatory_keys}."
+                msg = f"Experiment configuration missing mandatory key in {config_type}. Got {list(config_exp.keys())}, expected {mandatory_keys}."
 
                 # They all have necessary sub-keys
                 assert all(
-                    [k in config_model for k in mandatory_keys]
+                    [k in config_exp for k in mandatory_keys]
                 ), msg
 
     return True

@@ -1,61 +1,14 @@
-"""Additional util fonctions not related to datasets, config or plots"""
+"""Additional util fonctions not related to datasets, config or logs"""
 
 import numpy as np
-import os
 import json
 from pathlib import Path
-from datetime import datetime
 import inspect
 import importlib
 
 from typing import List, Dict, Tuple, Union, Sequence, Any
 
-# def get_list_exp(
-#     dataset_name: str,
-#     res_dir: str = './res/',
-#     suffix: str = ".json",
-# ) -> List[str]:
-#     """
-#     For each dataset, find all experiments working on this dataset
 
-#     Each experiment on a dataset used a different clustering method.
-#     This function filters based on the filename of the experiment file.
-
-#     The extension (".json") is not included in the returned filenames
-
-#     Parameters
-#     ----------
-#     dataset_name : str
-#         Name of the dataset
-#     res_dir : str, optional
-#         Path to the directory containing the experiments, by default
-#         './res/'
-#     suffix : str, optional
-#         Suffix of the experiment filenames, by default ".json", but
-#         using "_scored.json" can be useful to use score files instead of
-#         clustering files.
-
-#     Returns
-#     -------
-#     List[str]
-#         List of experiment filenames (excluding the extension ".json")
-#     """
-
-#     # List of directories, corresponding to clustering methods
-#     list_dirs = [
-#         dname.strip() for dname in next(os.walk(res_dir))[1]
-#         if dname not in ["Selected"]]
-
-#     fnames = []
-#     for dir in list_dirs:
-
-#         dir_fnames = [f.name for f in os.scandir(res_dir + dir)]
-#         # get full directory + filename without the extension
-#         fnames += [
-#             dir + "/" + fname[:-5] for fname in dir_fnames
-#             if dataset_name + suffix in fname
-#         ]
-#     return fnames
 
 
 def get_obj_from_string(obj_str: str) -> Any:
@@ -250,6 +203,13 @@ def interpret_dict(config:Union[dict, str]) -> dict:
 
     return interpreted_dict
 
+def equal_dict(d1: dict, d2:dict) -> bool:
+    """
+    Check whether 2 dicts are equal, allowing for lists in values
+    """
+    are_equal = True
+
+
 def load_json(fname: str) -> Dict:
     """
     Load a JSON file and cast numeric string keys to integers.
@@ -291,213 +251,6 @@ def write_json(fname: str, data: Dict) -> None:
     with open(fname, 'w', encoding='utf-8') as f:
         f.write(json_str)
 
-# def get_fname(
-#     d: str,
-#     only_root: bool=False,
-#     data_source: str = "artificial",
-# ) -> str:
-#     """
-#     Find the filename (or root) corresponding to the UCR dataset
-
-#     Parameters
-#     ----------
-#     d : str
-#         Dataset name.
-#     only_root : bool, optional
-#         If True and ``data_source == 'UCR'``, return only the dataset
-#         directory path, by default False.
-#     data_source : str, optional
-#         Dataset source: ``"UCR"``, ``"artificial"``, or
-#         ``"real-world"``, by default ``"artificial"``.
-
-#     Returns
-#     -------
-#     str
-#         Dataset filename or root path depending on ``data_source`` and
-#         ``only_root``.
-#     """
-#     fname = ""
-#     if data_source == "UCR":
-#         if d in ILL_FORMATED:
-#             fname += f"{ILL_FORMATED_DIR}"
-#         fname += f"{d}/"
-#         if not only_root:
-#             fname += f"{d}_TRAIN.tsv"
-#     else:
-#         fname = f"{d}"
-#     return fname
-
-def save_log(
-        log_fname: str,
-        log_dict: dict[str, Any],
-        overwrite: bool = False,
-        add_date: bool = True,
-        new_name: bool = False,
-        verbose: bool = False,
-    ) -> str | None:
-    """Save a JSON log file and optionally rename it when a file exists.
-
-    Parameters
-    ----------
-    log_fname : str
-        Target file path for the log file, typically a ``.json`` filename.
-    log_dict : dict[str, Any]
-        Dictionary of log metadata to serialize. Typical keys include run
-        parameters, status flags, and summary values. The ``log_filename`` key
-        is added or updated before writing.
-    overwrite : bool, default=False
-        Whether to overwrite an existing log file at ``log_fname``.
-    add_date : bool, default=True
-        Whether to append a ``YYYY-MM-DD--HH:MM:SS`` timestamp to the filename
-        before saving.
-    new_name : bool, default=False
-        Whether to create a new timestamped filename when ``log_fname`` already
-        exists and ``overwrite`` is ``False``.
-    verbose : bool, default=False
-        Whether to print status messages during save operations.
-
-    Returns
-    -------
-    str | None
-        The final log filename that was written, or ``None`` if saving was
-        skipped.
-    """
-
-    if add_date:
-        # Create a new filename by adding a suffix to the original filename
-        ext = Path(log_fname).suffix
-        base = log_fname.split(ext)[0]
-        full_date = datetime.today().strftime('%Y-%m-%d--%H:%M:%S')
-        log_fname = f"{base}-{full_date}{ext}"
-
-    if os.path.isfile(log_fname):
-
-        # Common message if log exists
-        if int(verbose) > 0:
-            print(f"Log file {log_fname} already exists.")
-        # Added message if log should be overwritten
-        if overwrite:
-            if int(verbose) > 0:
-                print(f"Overwriting log file {log_fname}.")
-        # Added message if we then cancel the saving of the log file
-        elif not new_name:
-            log_fname = None
-            if int(verbose) > 0:
-                print(f"Not overwriting nor creating new filename. Skipping log saving.")
-
-        # If we create a new name
-        else:
-
-            # Create a new filename by adding a suffix to the original filename
-            ext = Path(log_fname).suffix
-            base = log_fname.split(ext)[0]
-            full_date = datetime.today().strftime('%Y-%m-%d--%H:%M:%S')
-            log_fname = f"{base}-{full_date}{ext}"
-
-            if int(verbose) > 0:
-                print(f"Creating new filename: {log_fname}.")
-
-    if log_fname is not None:
-
-        # Make sure path exists otherwise create it
-        p = Path(log_fname)
-        p.parent.mkdir(parents=True, exist_ok=True)
-
-        log_dict["log_filename"] = log_fname
-
-        log_dict_serializable = simplify_dict(log_dict)
-
-        with open(log_fname, 'w') as f_log:
-            json.dump(log_dict_serializable, f_log, indent=2)
-
-        if int(verbose) > 0:
-            print(f"Saved log file to {log_fname}.")
-
-    return log_fname
 
 
-def print_log(
-        log:dict,
-    ) -> None:
-    """
-    Print a log dictionary in a readable text block.
 
-    Adds a `START LOG` and `END LOG` markers to the output to easily extract the log from a text file (see :func:`extract_log_from_text`).
-
-    Parameters
-    ----------
-    log : dict
-        Log dictionary to serialize and print.
-
-    Returns
-    -------
-    None
-        This function prints to standard output and returns nothing.
-    """
-    simpler_dict = simplify_dict(log)
-    print(f"\n┌─{'─'*70}─┐")
-    print(f"{" "*3} Log file: {log['log_data']['log_fname']}")
-    print(f"START LOG")
-    print(json.dumps(simpler_dict, indent=2), flush=True)
-    print(f"END LOG")
-    print(f"\n└─{'─'*70}─┘", flush=True)
-
-def extract_log_from_text(fname) -> list[dict]:
-    """
-    Extract log dicts from a log text file.
-
-    The text file should contain a JSON string representing the log dict,
-    starting with a line containing "START LOG" and ending with a line
-    containing "END LOG".
-
-    There could be several logs in the same text file, each one starting with "START LOG" and ending with "END LOG", but logically, there should be only 2 logs per text file, the one at the very beginning and the one at the very end, with some other text in between.
-
-    Parameters
-    ----------
-    fname : str
-        Path to the log text file.
-
-    Returns
-    -------
-    list[dict]
-        Log dictionaries extracted from the text file, in the order in
-        which they appear.
-    """
-    with open(fname, 'r') as f:
-        lines = f.readlines()
-    l_i_start = [i for i, line in enumerate(lines) if line == "START LOG\n"]
-    l_i_end = [i for i, line in enumerate(lines) if line == "END LOG\n"]
-    l_logs = []
-    for i_start, i_end in zip(l_i_start, l_i_end):
-        json_lines = [l for l in lines[i_start + 1:i_end]]
-        json_str = "".join(json_lines)
-        json_dict = json.loads(json_str)
-        l_logs.append(interpret_dict(json_dict))
-    return l_logs
-
-
-def extract_keys_from_log(log: Union[dict, str]) -> dict:
-    """
-    Extract the keys from a log dictionary or a log JSON file.
-
-    Parameters
-    ----------
-    log : Union[dict, str]
-        Log dictionary or path to a log JSON file.
-
-    Returns
-    -------
-    dict
-        Dictionary containing the keys of the log dictionary, with nested
-        dictionaries for nested keys.
-    """
-    log = interpret_dict(log)
-
-    keys = {}
-
-    for k, v in log.items():
-        if isinstance(v, dict):
-            keys[k] = extract_keys_from_log(v)
-        else:
-            keys[k] = k
-    return keys

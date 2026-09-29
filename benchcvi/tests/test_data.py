@@ -5,7 +5,8 @@ import pytest
 from ..barton import load_data_from_github, URL_ROOT
 
 from benchcvi.data import (
-    find_datasets, load_data_labels, filter_datasets, process_labels
+    find_datasets, load_data_labels, filter_datasets, process_labels,
+    summary_stats,
 )
 
 path_data = "./example_data/"
@@ -96,3 +97,50 @@ def test_process_labels():
     processed_labels, n_labels = process_labels(labels)
     assert isinstance(processed_labels, np.ndarray)
     assert n_labels == 2
+
+
+def test_summary_stats():
+
+    # Check with with a dataset of shape (N, d)
+    data = np.array([
+        [1.0, 2.0],
+        [3.0, 4.0],
+        [5.0, 6.0],
+        [7.0, 8.0],
+    ])
+    labels = np.array([1, 0, 1, 0])
+
+    stats = summary_stats(data, labels)
+
+    assert isinstance(stats, dict)
+    assert stats["shape"] == [4, 2]
+    assert np.allclose(stats["mean"], [4.0, 5.0])
+    assert np.allclose(stats["std"], [np.sqrt(5), np.sqrt(5)])
+    assert np.array_equal(stats["min"], [1.0, 2.0])
+    assert np.array_equal(stats["max"], [7.0, 8.0])
+    assert stats["n_labels"] == 2
+    assert np.array_equal(stats["datapoints_per_label"], [2, 2])
+    assert np.array_equal(stats["sum_idx_per_label"], [4, 2])
+
+    # Check with with a dataset of shape (N, T, d)
+    data = np.array([
+        [[1.0, 2.0], [3.0, 4.0]],
+        [[5.0, 6.0], [7.0, 8.0]],
+        [[9.0, 10.0], [11.0, 12.0]],
+    ])
+    labels = np.array([1, 0, 1])
+
+    stats = summary_stats(data, labels)
+
+    assert stats["shape"] == [3, 2, 2]
+    assert np.allclose(stats["mean"], [[5.0, 6.0], [7.0, 8.0]])
+    assert np.allclose(
+        stats["std"],
+        [[np.sqrt(32 / 3), np.sqrt(32 / 3)],
+         [np.sqrt(32 / 3), np.sqrt(32 / 3)]]
+    )
+    assert np.array_equal(stats["min"], [[1.0, 2.0], [3.0, 4.0]])
+    assert np.array_equal(stats["max"], [[9.0, 10.0], [11.0, 12.0]])
+    assert stats["n_labels"] == 2
+    assert np.array_equal(stats["datapoints_per_label"], [1, 2])
+    assert np.array_equal(stats["sum_idx_per_label"], [1, 2])

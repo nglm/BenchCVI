@@ -2,7 +2,8 @@
 import numpy as np
 import pytest
 
-from benchcvi.utils import (write_json, extract_log_from_text)
+from benchcvi.utils import (write_json)
+from benchcvi.log import extract_log_from_text
 
 from benchcvi.exp import (
     create_clusterings, prepare_data, compute_CVI_values
@@ -158,7 +159,7 @@ def test_create_clusterings():
     config2["config_data"]["path_res"] = f"{dir}/"
     write_json(config_fname, config2)
 
-    log = create_clusterings(config_fname)
+    log = create_clusterings(config_fname,re_run=True)
 
     assert isinstance(log, dict)
     assert "config_data" in log
@@ -193,7 +194,7 @@ def test_compute_CVI_values():
         write_json(config_fname, config)
 
         # ------- Test when re-computing everything --------
-        log = compute_CVI_values(config_fname)
+        log = compute_CVI_values(config_fname, re_run=True)
 
         assert isinstance(log, dict)
         assert "config_data" in log
@@ -214,7 +215,7 @@ def test_compute_CVI_values():
 
         # ------- Test when starting from previous log --------
         log_exp = log["log_clustering"]["log_fname"]
-        log_bis = compute_CVI_values(config_fname, log_exp)
+        log_bis = compute_CVI_values(config_fname, log_exp, re_run=True)
 
         # Check that everything that isn't the log_fname or time is the same
         log_bis_copy = log_bis.copy()
