@@ -14,7 +14,9 @@ from pycvi.compute_scores import compute_all_scores
 from pycvi.exceptions import SelectionError
 from pycvi.dist import time_series_metric_with_sklearn
 
-from .config import interpret_config, get_exp_config, get_mandatory_keys
+from .config import (
+    interpret_config, get_exp_config, get_mandatory_keys, check_config
+)
 from .data import (
     all_summary_stats, find_datasets, filter_datasets, load_data_labels, is_time_series,
     all_summary_stats
@@ -64,6 +66,7 @@ def prepare_data(config_fname:str) -> dict:
     """
     # ---------------- Read config file ---------------------
     config = interpret_config(config_fname)
+    check_config(config)
     if "config_data" not in config:
         raise ValueError("The config file must contain a 'config_data' key.")
     path_data = config['config_data']['path_data']
@@ -248,6 +251,7 @@ def create_clusterings(
     t_start = time.time()
 
     config = interpret_config(config_fname)
+    check_config(config)
     if "config_clustering" not in config:
         raise ValueError("The config file must contain a 'config_clustering' key.")
 
@@ -373,11 +377,18 @@ def create_clusterings(
                     if v == time_series_metric_with_sklearn:
                         model_kw[k] = time_series_metric_with_sklearn(d=D)
 
+                # Distinguish between methods based on k and others
+                if "k_range" in exp_config:
+                    k_range = range(*exp_config['k_range'])
+                else:
+                    k_range = None
+                    # Convert dict format to match PyCVI
+
                 # Generate all clusterings for the current dataset and exp
                 clusterings = generate_all_clusterings(
                     data=data,
                     model_class=exp_config['model'],
-                    n_clusters_range=range(*exp_config['k_range']),
+                    n_clusters_range=k_range,
                     ts_dist=ts_dist,
                     scaler=scaler,
                     model_kw=model_kw,
@@ -514,6 +525,7 @@ def compute_CVI_values(
     t_start = time.time()
 
     config = interpret_config(config_fname)
+    check_config(config)
     if "config_CVI" not in config:
         raise ValueError("The config file must contain a 'config_CVI' key.")
 

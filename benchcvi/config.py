@@ -7,6 +7,7 @@ import numpy as np
 from pathlib import Path
 
 from .utils import write_json, interpret_dict
+from .exceptions import ConfigurationError
 
 CONFIG_DATA_BASE = {
     "config_data" : {
@@ -273,6 +274,8 @@ CONFIG_DEFAULT_VALUES = {
         "seed" : 221,
         "quality_ref_min" : 0.0,
         "quality_best_min" : 0.0,
+        "best_q_ref_only" : False,
+        "best_q_best_only" : False,
         "lower" : {
             "cvi_init_kw" : {},
             "cvi_kw" : {}
@@ -382,6 +385,61 @@ def make_default_config(
         write_json(filenames[2], CONFIG_CLUSTERING_TIME_SERIES_BASE)
     write_json(filenames[-1], CONFIG_CVI_BASE)
 
+def get_model_ids(
+    exp_config:dict,
+    check_consistency : bool = False,
+) -> Union[list, None]:
+    """
+    Get the model ids from a clustering experiment config.
+
+    When performing the consistency check, this function assumes that
+    the config has already been completed with default values.
+
+    If the experiment config is not a clustering config, return None. If
+    the experiment config is a clustering config but with a clustering
+    model based on k, return None. If the experiment config is a
+    clustering config with a clustering model not based on k, return the
+    list of model ids.
+
+    Parameters
+    ----------
+    exp_config : dict
+        Configuration dictionary for an experiment.
+    check_consistency : bool, optional
+        If True, check that the model ids are consistent across the
+        ``model``, ``model_kw`` and ``fit_predict_kw`` dictionaries, by
+        default False.
+
+    Returns
+    -------
+    Union[list, None]
+        List of model ids if present, otherwise None.
+
+    Raises
+    -----
+    ConfigurationError
+        If check_consistency is True and the model ids are not consistent
+    """
+    if "model" in exp_config and isinstance(exp_config["model"], dict):
+        model_ids = list(exp_config["model"].keys())
+        if check_consistency:
+            msg = f"Inconsistent model ids between 'model' and "
+            # Check that other dicts have the same model ids
+            for key in ["model_kw", "fit_predict_kw"]:
+
+                # First check that the dict is present in the config
+                if key not in exp_config:
+                    msg += f"{key} is missing in the config."
+                    raise ConfigurationError(msg)
+
+                # If present, must have the the good model ids
+                ids = list(exp_config[key].keys())
+                if set(ids) != set(model_ids):
+                    msg += f"{key}. Got {ids}, expected {model_ids}."
+                    raise ConfigurationError(f"Inconsistent model ids in {key}.")
+        return model_ids
+    else:
+        return None
 
 def add_default(config:dict) -> dict:
     """
@@ -394,8 +452,12 @@ def add_default(config:dict) -> dict:
     For the general clustering config: Add  ``seed``if not present.
 
     For each clustering experiment: Add ``model_kw``, ``fit_predict_kw``,
-    ``scaler``, ``scaler_kw`` if not present (but not ``model``,
-    which is in any case mandatory).
+    ``scaler``, ``scaler_kw`` if not present (but not ``model``, which
+    is in any case mandatory). In addition, if we are in the case of a
+    clustering config with clustering methods that are not mainly based
+    on k, then add default values for ``fit_predict_kw`` and
+    ``model_kw`` for each model_id present in ``model` that are not
+    present in ``fit_predict_kw`` and ``model_kw``.
 
     For the general CVI config: Add ``quality_ref_min``, ``quality_best_min``, ``seed``, ``best_q_ref_only``, ``best_q_best_only`` if not present.
 
@@ -429,13 +491,29 @@ def add_default(config:dict) -> dict:
             # Complete lower level config with default values, if not present
             # 1. Remove the "lower" key from the complete_dict
             has_lower = complete_dict[config_type].pop("lower", False)
+
             # 2. Add the lower level default values to each exp's config
             if has_lower:
                 for exp, exp_config in exps_config[config_type].items():
-                    complete_dict[config_type][exp] = default_values["lower"] | exp_config
+
+                    model_ids = get_model_ids(exp_config)
+
+                    # 2.a base case, no model_ids, just directly lower keys
+                    if model_ids is None:
+                        complete_dict[config_type][exp] = default_values["lower"] | exp_config
+                    # 2.b add lower keys for each model_id
+                    # for model related kwargs (not scaler)
+                    else:
+                        full_config = {
+                            key : {
+                                id : exp_config.get(key, {}).get(id, default_values["lower"][key])
+                                for id in model_ids
+                            } for key in ["model_kw", "fit_predict_kw"]
+                        }
+                        for key in ["model_kw", "fit_predict_kw"]:
+                            complete_dict[config_type][exp][key] = full_config[key]
 
     return complete_dict
-
 
 
 def interpret_config(config:Union[dict, str]) -> dict:
@@ -530,7 +608,6 @@ def check_config( config:dict, ) -> bool:
     # Subset of the config that is only about the experiments (cvi, clustering)
     exp_config = get_exp_config(config)
 
-
     for config_type, config_keys in all_keys.items():
 
         # If the config is present, then it must follow requirements
@@ -541,9 +618,10 @@ def check_config( config:dict, ) -> bool:
             msg = f"Configuration {config_type} missing mandatory keys, got {list(config[config_type].keys())}, expected {config_keys["mandatory"]}"
 
             # Test that mandatory keys are here for each config type
-            assert all(
+            if not all(
                 [k in config[config_type] for k in config_keys["mandatory"]]
-            ), msg
+            ):
+                raise ConfigurationError(msg)
 
             # ============== Lower level mandatory keys ==============
 
@@ -554,7 +632,8 @@ def check_config( config:dict, ) -> bool:
 
             # Check that there is at least one experiment
             if not exp_config[config_type]:
-                raise ValueError(f"No individual experiments configured in {config_type}.")
+                msg = f"No individual experiments configured in {config_type}."
+                raise ConfigurationError(msg)
 
             # Check each experiment (clustering or cvi) one by one
             mandatory_keys = all_keys[config_type]["lower"]
@@ -564,8 +643,9 @@ def check_config( config:dict, ) -> bool:
                 msg = f"Experiment configuration missing mandatory key in {config_type}. Got {list(config_exp.keys())}, expected {mandatory_keys}."
 
                 # They all have necessary sub-keys
-                assert all(
+                if not all(
                     [k in config_exp for k in mandatory_keys]
-                ), msg
+                ):
+                    raise ConfigurationError(msg)
 
     return True

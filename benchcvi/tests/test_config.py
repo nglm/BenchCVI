@@ -14,9 +14,10 @@ from ..config import (
     CONFIG_CVI_BASE, CONFIG_DEFAULT_VALUES, get_exp_config,
     make_default_config, add_default, check_config,
     interpret_config, interpret_config,
-    get_mandatory_keys,
+    get_mandatory_keys, get_model_ids
 )
 from ..utils import write_json, load_json
+from ..exceptions import ConfigurationError
 
 config_1 = {
     "quality_ref_min": 0.6,
@@ -99,6 +100,50 @@ config_clustering = {
   }
 }
 
+config_clustering_mixed = {
+  "config_clustering": {
+    "KASBA": {
+      "k_range": [
+        1,
+        4
+      ],
+      "model": "aeon.clustering.KASBA",
+      "model_kw": {},
+      "fit_predict_kw": {},
+      "scaler": "sklearn.preprocessing.StandardScaler",
+      "scaler_kw": {}
+    },
+    "OPTICS_HDBSCAN": {
+      "scaler": "sklearn.preprocessing._data.StandardScaler",
+      "scaler_kw": {},
+      "model_kw": {
+        "02" : {
+          "min_samples": 10,
+          "xi": 0.05
+        },
+      },
+      "fit_predict_kw": {
+        "01" : {},
+        "04" : {}
+      },
+      "model": {
+        "01" : "sklearn.cluster._optics.OPTICS",
+        "02" : "sklearn.cluster._optics.OPTICS",
+        "03" : "sklearn.cluster._optics.OPTICS",
+        "04" : "sklearn.cluster._hdbscan.HDBSCAN"
+      },
+    },
+    "OPTICS_HDBSCAN_letters": {
+      "model": {
+        "A" : "sklearn.cluster._optics.OPTICS",
+        "B" : "sklearn.cluster._optics.OPTICS",
+        "C" : "sklearn.cluster._optics.OPTICS",
+        "D" : "sklearn.cluster._hdbscan.HDBSCAN"
+      },
+    },
+  }
+}
+
 def test_constants():
     assert isinstance(CONFIG_DATA_BASE, dict)
     assert isinstance(CONFIG_CLUSTERING_BASE, dict)
@@ -144,6 +189,10 @@ def test_add_default():
     config_clustering_time_series_res = add_default(config_clustering_time_series)
     assert config_clustering_time_series == config_clustering_time_series_res
     assert check_config(config_clustering_time_series_res)
+
+    # Mixed config
+    config_clustering_mixed_res = add_default(config_clustering_mixed)
+    assert check_config(config_clustering_mixed_res)
 
     # Config CVI is different
     config_cvi_res = add_default(config_CVI)
@@ -240,3 +289,44 @@ def test_get_exp_config():
 
     assert get_exp_config(config_cvi) == expected_experiments_cvi
 
+def test_get_model_ids():
+
+    # Mixed config before adding default
+    exp_configs = get_exp_config(config_clustering_mixed)
+
+    exp_k = exp_configs["config_clustering"]["KASBA"]
+    exp_non_k_1 = exp_configs["config_clustering"]["OPTICS_HDBSCAN"]
+    exp_non_k_2 = exp_configs["config_clustering"]["OPTICS_HDBSCAN_letters"]
+
+    model_ids_k = get_model_ids(exp_k)
+    assert model_ids_k is None
+
+    model_ids_non_k_1 = get_model_ids(exp_non_k_1)
+    assert set(model_ids_non_k_1) == set(["01", "02", "03", "04"])
+
+    model_ids_non_k_2 = get_model_ids(exp_non_k_2)
+    assert set(model_ids_non_k_2) == set(["A", "B", "C", "D"])
+
+    with pytest.raises(ConfigurationError):
+        get_model_ids(exp_non_k_1, check_consistency=True)
+
+    with pytest.raises(ConfigurationError):
+        get_model_ids(exp_non_k_2, check_consistency=True)
+
+
+    # Mixed config after adding default
+    config_clustering_mixed_res = add_default(config_clustering_mixed)
+    exp_configs = get_exp_config(config_clustering_mixed_res)
+
+    exp_k = exp_configs["config_clustering"]["KASBA"]
+    exp_non_k_1 = exp_configs["config_clustering"]["OPTICS_HDBSCAN"]
+    exp_non_k_2 = exp_configs["config_clustering"]["OPTICS_HDBSCAN_letters"]
+
+    model_ids_k = get_model_ids(exp_k)
+    assert model_ids_k is None
+
+    model_ids_non_k_1 = get_model_ids(exp_non_k_1, check_consistency=True)
+    assert set(model_ids_non_k_1) == set(["01", "02", "03", "04"])
+
+    model_ids_non_k_2 = get_model_ids(exp_non_k_2, check_consistency=True)
+    assert set(model_ids_non_k_2) == set(["A", "B", "C", "D"])
